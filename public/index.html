@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeekCard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f5f5f0;--bg2:#fff;--bg3:#f0ede8;--txt:#1a1a18;--txt2:#666;--txt3:#999;--bord:#e0ddd8;--purple:#533AB7;--purple2:#3C3489;--green:#1D9E75;--red:#D85A30;--blue:#185FA5;--amber:#854F0B;--radius:10px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);font-size:14px;height:100vh;overflow:hidden}
+#login-screen{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg)}
+.login-box{background:var(--bg2);border-radius:16px;padding:2.5rem;width:320px;border:1px solid var(--bord)}
+.login-logo{font-size:28px;font-weight:600;margin-bottom:4px}
+.login-sub{color:var(--txt2);font-size:13px;margin-bottom:1.5rem}
+.login-box input{width:100%;padding:10px 14px;border:1px solid var(--bord);border-radius:8px;font-size:14px;margin-bottom:12px}
+.login-box input:focus{outline:none;border-color:var(--purple)}
+.login-btn{width:100%;padding:10px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:500}
+.login-btn:hover{background:var(--purple2)}
+#app{display:none;height:100vh;flex-direction:column}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--bord);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.logo{font-size:16px;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.alert-btn{position:relative;background:none;border:1px solid var(--bord);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;color:var(--txt)}
+.alert-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;display:flex;align-items:center;justify-content:center}
+.sync-btn{background:none;border:1px solid var(--bord);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;color:var(--txt)}
+.sync-btn:hover{background:var(--bg3)}
+.body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:190px;background:var(--bg2);border-right:1px solid var(--bord);display:flex;flex-direction:column;padding:12px 0;flex-shrink:0}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:var(--txt2);border-left:3px solid transparent;font-size:13px;transition:all 0.12s}
+.nav-item:hover{background:var(--bg3);color:var(--txt)}
+.nav-item.active{background:var(--bg3);color:var(--purple);border-left-color:var(--purple);font-weight:500}
+.nav-icon{font-size:16px;width:18px;text-align:center}
+.main{flex:1;overflow-y:auto;padding:1.25rem 1.5rem}
+.page{display:none}
+.page.active{display:block}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.page-title{font-size:17px;font-weight:500}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.25rem}
+.card-m{background:var(--bg3);border-radius:var(--radius);padding:14px}
+.card-m .lbl{font-size:11px;color:var(--txt2);margin-bottom:3px}
+.card-m .val{font-size:20px;font-weight:500}
+.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}
+.card{background:var(--bg2);border:1px solid var(--bord);border-radius:var(--radius);margin-bottom:12px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--bord)}
+.card-title{font-size:13px;font-weight:500}
+.card-body{padding:0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;padding:9px 12px;color:var(--txt2);font-weight:500;font-size:11px;border-bottom:1px solid var(--bord);text-transform:uppercase;letter-spacing:.3px}
+td{padding:9px 12px;border-bottom:1px solid var(--bord)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg3)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.b-novo{background:#E6F1FB;color:#185FA5}
+.b-enviado{background:#FAEEDA;color:#854F0B}
+.b-despachado{background:#EAF3DE;color:#3B6D11}
+.b-entregue{background:#E1F5EE;color:#0F6E56}
+.b-pendente{background:#FAECE7;color:#993C1D}
+.b-pago{background:#E1F5EE;color:#0F6E56}
+.b-ml{background:#fff3cd;color:#7d5a00}
+.b-sp{background:#fff0ec;color:#c73a00}
+.b-tt{background:#2C2C2A;color:#D3D1C7}
+.btn{padding:6px 12px;border:1px solid var(--bord);border-radius:7px;background:transparent;color:var(--txt);cursor:pointer;font-size:12.5px;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{background:var(--bg3)}
+.btn.primary{background:var(--purple);color:#fff;border-color:var(--purple)}
+.btn.primary:hover{background:var(--purple2)}
+.btn.sm{padding:4px 9px;font-size:11.5px}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bord);margin-bottom:1rem}
+.tab{padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--txt2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple);font-weight:500}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border-radius:14px;padding:1.5rem;width:460px;max-width:96vw;max-height:88vh;overflow-y:auto}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.modal-title{font-size:15px;font-weight:500}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg.full{grid-column:1/-1}
+label{font-size:11.5px;color:var(--txt2);font-weight:500}
+input,select,textarea{padding:8px 10px;border:1px solid var(--bord);border-radius:7px;background:var(--bg2);color:var(--txt);font-size:13px;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--purple)}
+.alert-item{padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.a-info{background:#E6F1FB;color:#185FA5;border:1px solid #B5D4F4}
+.a-warning{background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
+.bv-box{background:var(--purple);color:#fff;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.bv-title{font-size:20px;font-weight:500;margin-bottom:4px}
+.bv-sub{font-size:13px;opacity:.85}
+.bv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1rem}
+.bv-stat{background:rgba(255,255,255,.15);border-radius:8px;padding:10px 12px}
+.bv-stat .n{font-size:18px;font-weight:500}
+.bv-stat .l{font-size:11px;opacity:.8;margin-top:2px}
+.bar-wrap{height:7px;background:rgba(0,0,0,.08);border-radius:4px;margin-top:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.integr-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bord)}
+.integr-row:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot.on{background:var(--green)}.dot.off{background:var(--red)}
+.empty{text-align:center;padding:2.5rem;color:var(--txt2);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🃏 GeekCard</div>
+    <div class="login-sub">Gestão de Dropshipping</div>
+    <input type="password" id="senha-input" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Entrar</button>
+    <div id="login-erro" style="color:var(--red);font-size:12px;margin-top:8px;display:none">Senha incorreta</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="logo">🃏 GeekCard</div>
+    <div class="topbar-right">
+      <button class="sync-btn" onclick="sincronizar(this)">🔄 Sincronizar</button>
+      <button class="alert-btn" onclick="nav('alertas')" id="btn-alertas">
+        🔔 Alertas
+        <span class="alert-badge" id="badge-alertas" style="display:none">0</span>
+      </button>
+      <button class="btn sm" onclick="logout()">Sair</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="sidebar">
+      <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="nav('pedidos')"><span class="nav-icon">🛒</span> Pedidos</div>
+      <div class="nav-item" onclick="nav('financeiro')"><span class="nav-icon">💰</span> Financeiro</div>
+      <div class="nav-item" onclick="nav('fornecedores')"><span class="nav-icon">🏭</span> Fornecedores</div>
+      <div class="nav-item" onclick="nav('produtos')"><span class="nav-icon">📦</span> Produtos</div>
+      <div class="nav-item" onclick="nav('integracoes')"><span class="nav-icon">🔗</span> Integrações</div>
+      <div class="nav-item" onclick="nav('alertas')"><span class="nav-icon">🔔</span> Alertas</div>
+    </div>
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="ph">
+          <div class="page-title" id="bv-saudacao">Dashboard</div>
+          <select onchange="carregarDash(this.value)" style="font-size:12.5px;width:auto">
+            <option value="hoje">Hoje</option>
+            <option value="semana">Esta semana</option>
+            <option value="mes" selected>Este mês</option>
+          </select>
+        </div>
+        <div id="bv-banner" style="display:none" class="bv-box">
+          <div class="bv-title" id="bv-msg"></div>
+          <div class="bv-sub" id="bv-sub"></div>
+          <div class="bv-stats">
+            <div class="bv-stat"><div class="n" id="bv-pedidos">—</div><div class="l">Pedidos hoje</div></div>
+            <div class="bv-stat"><div class="n" id="bv-vendas">—</div><div class="l">Recebido hoje</div></div>
+            <div class="bv-stat"><div class="n" id="bv-lucro">—</div><div class="l">Lucro hoje</div></div>
+          </div>
+        </div>
+        <div class="cards" id="dash-cards"></div>
+        <div id="dash-alertas"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Por plataforma</div></div>
+            <div id="dash-plataformas" style="padding:14px"></div>
+          </div>
+          <div class="card">
+            <div class="card-hd"><div class="card-title">Pedidos recentes a enviar</div></div>
+            <table><thead><tr><th>Produto</th><th>Plataforma</th><th>Status</th></tr></thead>
+            <tbody id="dash-recentes"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PEDIDOS -->
+      <div class="page" id="page-pedidos">
+        <div class="ph">
+          <div class="page-title">Pedidos</div>
+          <button class="btn primary" onclick="openModal('modal-pedido')">+ Novo pedido</button>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="filtrarPedidos('',this)">Todos</div>
+          <div class="tab" onclick="filtrarPedidos('Novo',this)">Novos</div>
+          <div class="tab" onclick="filtrarPedidos('Enviado',this)">Enviados</div>
+          <div class="tab" onclick="filtrarPedidos('Despachado',this)">Despachados</div>
+          <div class="tab" onclick="filtrarPedidos('Entregue',this)">Entregues</div>
+        </div>
+        <div class="card" style="padding:0">
+          <table><thead><tr><th>#</th><th>Produto</th><th>Plataforma</th><th>Cliente</th><th>Fornecedor</th><th>Taxas</th><th>Lucro</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tbody-pedidos"><tr><td colspan="9" class="empty">Carregando...</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- FINANCEIRO -->
+      <div class="page" id="page-financeiro">
+        <div class="ph"><div class="page-title">Financeiro</div></div>
+        <div class="cards" id="fin-cards"></div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">Repasses por fornecedor</div>
+            <button class="btn sm primary" onclick="openModal('modal-repasse')">+ Registrar repasse</button>
+          </div>
+          <table><thead><tr><th>Fornecedor</th><th>Pedidos</th><th>Total comprado</th><th>Já pago</th><th>Pendente</th><th>Forma</th><th></th></tr></thead>
+          <tbody id="tbody-forn-fin"></tbody></table>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Histórico de repasses</div></div>
+          <table><thead><tr><th>Data</th><th>Fornecedor</th><th>Valor</th><th>Forma</th><th>Status</th></tr></thead>
+          <tbody id="tbody-repasses"></tbody></table>
+        </div>
+      </div>
+
+      <!-- FORNECEDORES -->
+      <div class="page" id="page-fornecedores">
+        <div class="ph">
+          <div class="page-title">Fornecedores</div>
+          <button class="btn primary" onclick="openModal('modal-fornecedor')">+ Novo fornecedor</button>
+        </div>
+        <div id="lista-fornecedores" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+      </div>
+
+      <!-- PRODUTOS -->
+      <div class="page" id="page-produtos">
+        <div class="ph">
+          <div class="page-title">Produtos</div>
+          <button class="btn primary" onclick="openModal('modal-produto')">+ Novo produto</button>
+        </div>
+        <div class="card" style="padding:0">
+          <table><thead><tr><th>Produto</th><th>Fornecedor</th><th>SKU</th><th>Custo</th><th>Venda</th><th>Margem</th><th>Vendas</th><th>Lucro total</th></tr></thead>
+          <tbody id="tbody-produtos"></tbody></table>
+        </div>
+      </div>
+
+      <!-- INTEGRAÇÕES -->
+      <div class="page" id="page-integracoes">
+        <div class="ph"><div class="page-title">Integrações com plataformas</div></div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Status das conexões</div></div>
+          <div style="padding:0 16px" id="integr-lista"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="card-hd"><div class="card-title">Como conectar</div></div>
+          <div style="padding:14px;font-size:13px;line-height:1.8;color:var(--txt2)">
+            <b style="color:var(--txt)">Mercado Livre:</b> Configure ML_CLIENT_ID e ML_CLIENT_SECRET no .env, depois clique em "Conectar".<br>
+            <b style="color:var(--txt)">Shopee:</b> Configure SHOPEE_PARTNER_ID e SHOPEE_PARTNER_KEY no .env, depois clique em "Conectar".<br>
+            <b style="color:var(--txt)">TikTok Shop:</b> Configure TIKTOK_APP_KEY e TIKTOK_APP_SECRET no .env, depois clique em "Conectar".<br>
+            <b style="color:var(--txt)">WhatsApp:</b> Crie conta gratuita em <a href="https://z-api.io" target="_blank">z-api.io</a> e configure ZAPI_INSTANCE_ID, ZAPI_TOKEN e WHATSAPP_NUMBER no .env.
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTAS -->
+      <div class="page" id="page-alertas">
+        <div class="ph">
+          <div class="page-title">Alertas e notificações</div>
+          <button class="btn sm" onclick="lerTodos()">Marcar todos como lido</button>
+        </div>
+        <div id="lista-alertas"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PEDIDO -->
+<div class="modal-bg" id="modal-pedido">
+<div class="modal">
+  <div class="modal-hd"><div class="modal-title">Novo pedido</div><button class="btn sm" onclick="closeModal('modal-pedido')">✕</button></div>
+  <div class="fr"><div class="fg"><label>Produto</label><select id="p-prod" onchange="autoFill()"></select></div>
+  <div class="fg"><label>Plataforma</label><select id="p-plat"><option>Mercado Livre</option><option>Shopee</option><option>TikTok Shop</option></select></div></div>
+  <div class="fr" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="fg"><label>Valor do cliente (R$)</label><input type="number" id="p-vlr" step="0.01" placeholder="0.00" oninput="calcLucro()"></div>
+    <div class="fg"><label>Custo fornecedor (R$)</label><input type="number" id="p-custo" step="0.01" placeholder="0.00" oninput="calcLucro()"></div>
+    <div class="fg"><label>Taxa plataforma (R$)</label><input type="number" id="p-taxa" step="0.01" placeholder="0.00" oninput="calcLucro()"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Taxa frete (R$)</label><input type="number" id="p-frete" step="0.01" placeholder="0.00" oninput="calcLucro()"></div>
+    <div class="fg"><label>Outras taxas (R$)</label><input type="number" id="p-outras" step="0.01" placeholder="0.00" oninput="calcLucro()"></div>
+  </div>
+  <div style="background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:13px;display:flex;justify-content:space-between">
+    <span style="color:var(--txt2)">Lucro estimado:</span>
+    <span id="p-lucro-preview" style="font-weight:500">R$ 0,00</span>
+  </div>
+  <div class="fr"><div class="fg full"><label>Observação</label><input type="text" id="p-obs" placeholder="ID do pedido, nome do cliente, etc."></div></div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+    <button class="btn" onclick="closeModal('modal-pedido')">Cancelar</button>
+    <button class="btn primary" onclick="salvarPedido()">✓ Salvar pedido</button>
+  </div>
+</div></div>
+
+<!-- MODAL FORNECEDOR -->
+<div class="modal-bg" id="modal-fornecedor">
+<div class="modal">
+  <div class="modal-hd"><div class="modal-title">Novo fornecedor</div><button class="btn sm" onclick="closeModal('modal-fornecedor')">✕</button></div>
+  <div class="fr"><div class="fg full"><label>Nome do fornecedor</label><input type="text" id="f-nome" placeholder="Ex: TechSupply"></div></div>
+  <div class="fr">
+    <div class="fg"><label>Contato (WhatsApp/email)</label><input type="text" id="f-contato"></div>
+    <div class="fg"><label>Prazo médio envio (dias)</label><input type="number" id="f-prazo" value="3"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Forma de pagamento</label><select id="f-pgto"><option>Pix</option><option>Cartão</option><option>Boleto</option></select></div>
+    <div class="fg"><label>Chave Pix / dados bancários</label><input type="text" id="f-chave" placeholder="CPF, CNPJ, email, tel..."></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+    <button class="btn" onclick="closeModal('modal-fornecedor')">Cancelar</button>
+    <button class="btn primary" onclick="salvarFornecedor()">✓ Salvar</button>
+  </div>
+</div></div>
+
+<!-- MODAL PRODUTO -->
+<div class="modal-bg" id="modal-produto">
+<div class="modal">
+  <div class="modal-hd"><div class="modal-title">Novo produto</div><button class="btn sm" onclick="closeModal('modal-produto')">✕</button></div>
+  <div class="fr"><div class="fg full"><label>Nome do produto</label><input type="text" id="pr-nome"></div></div>
+  <div class="fr">
+    <div class="fg"><label>Fornecedor</label><select id="pr-forn"></select></div>
+    <div class="fg"><label>SKU</label><input type="text" id="pr-sku" placeholder="Ex: MP-XL-001"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Preço de custo (R$)</label><input type="number" id="pr-custo" step="0.01"></div>
+    <div class="fg"><label>Preço médio venda (R$)</label><input type="number" id="pr-venda" step="0.01"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+    <button class="btn" onclick="closeModal('modal-produto')">Cancelar</button>
+    <button class="btn primary" onclick="salvarProduto()">✓ Salvar</button>
+  </div>
+</div></div>
+
+<!-- MODAL REPASSE -->
+<div class="modal-bg" id="modal-repasse">
+<div class="modal">
+  <div class="modal-hd"><div class="modal-title">Registrar repasse</div><button class="btn sm" onclick="closeModal('modal-repasse')">✕</button></div>
+  <div class="fr">
+    <div class="fg"><label>Fornecedor</label><select id="r-forn"></select></div>
+    <div class="fg"><label>Valor (R$)</label><input type="number" id="r-vlr" step="0.01"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Forma de pagamento</label><select id="r-pgto"><option>Pix</option><option>Cartão</option><option>Boleto</option></select></div>
+    <div class="fg"><label>Observação</label><input type="text" id="r-obs" placeholder="Ref. pedidos..."></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+    <button class="btn" onclick="closeModal('modal-repasse')">Cancelar</button>
+    <button class="btn success" onclick="salvarRepasse()">✓ Confirmar repasse</button>
+  </div>
+</div></div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('gc_token');
+let fornecedores = [], produtos = [];
+
+const fmt = v => 'R$ ' + Number(v||0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const fmtD = d => new Date(d).toLocaleDateString('pt-BR');
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + '/api' + path, {
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+    credentials: 'include', ...opts
+  });
+  if (res.status === 401) { showLogin(); return null; }
+  return res.json();
+}
+
+async function login() {
+  const senha = document.getElementById('senha-input').value;
+  const data = await fetch('/api/auth/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', body: JSON.stringify({ senha })
+  }).then(r => r.json());
+  if (data.token) {
+    token = data.token;
+    localStorage.setItem('gc_token', token);
+    showApp();
+  } else {
+    document.getElementById('login-erro').style.display = 'block';
+  }
+}
+
+async function logout() {
+  await api('/auth/logout', { method: 'POST' });
+  token = null; localStorage.removeItem('gc_token'); showLogin();
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  await Promise.all([carregarBase(), carregarDash('mes'), carregarAlertas(), boasVindas()]);
+}
+
+async function carregarBase() {
+  [fornecedores, produtos] = await Promise.all([api('/fornecedores'), api('/produtos')]);
+  populateSelects();
+}
+
+function populateSelects() {
+  const fs = (fornecedores || []).map(f => `<option value="${f.id}">${f.nome}</option>`).join('');
+  const ps = (produtos || []).map(p => `<option value="${p.id}" data-custo="${p.preco_custo}" data-forn="${p.fornecedor_id}">${p.nome}</option>`).join('');
+  ['p-prod'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = '<option value="">— Selecione —</option>' + ps; });
+  ['pr-forn','r-forn'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = fs; });
+}
+
+async function boasVindas() {
+  const d = await api('/dash/boas-vindas');
+  if (!d) return;
+  const banner = document.getElementById('bv-banner');
+  const hora = new Date().getHours();
+  if (hora >= 17 || hora < 9) {
+    banner.style.display = 'block';
+    document.getElementById('bv-msg').textContent = d.saudacao + '! Aqui está o seu dia:';
+    document.getElementById('bv-sub').textContent = `${d.pedidosPendentes} pedido(s) aguardando envio · ${d.repassesPendentes} repasse(s) pendente(s)`;
+    document.getElementById('bv-pedidos').textContent = d.hoje?.totalPedidos || 0;
+    document.getElementById('bv-vendas').textContent = fmt(d.hoje?.totalVendas);
+    document.getElementById('bv-lucro').textContent = fmt(d.hoje?.lucro);
+  }
+}
+
+async function carregarDash(periodo) {
+  const d = await api('/dash/resumo?periodo=' + periodo);
+  if (!d) return;
+  const r = d.resumo;
+  document.getElementById('dash-cards').innerHTML = `
+    <div class="card-m"><div class="lbl">Vendas brutas</div><div class="val blue">${fmt(r.totalVendas)}</div></div>
+    <div class="card-m"><div class="lbl">Repassado fornec.</div><div class="val red">${fmt(r.totalRepasse)}</div></div>
+    <div class="card-m"><div class="lbl">Taxas</div><div class="val red">${fmt(r.totalTaxas)}</div></div>
+    <div class="card-m"><div class="lbl">Lucro líquido</div><div class="val green">${fmt(r.lucro)}</div></div>
+    <div class="card-m"><div class="lbl">Pedidos</div><div class="val">${r.totalPedidos}</div></div>
+    <div class="card-m"><div class="lbl">Margem</div><div class="val green">${r.totalVendas > 0 ? (r.lucro/r.totalVendas*100).toFixed(1)+'%' : '—'}</div></div>
+  `;
+  let alertasHtml = '';
+  if (d.pendentesEnvio > 0) alertasHtml += `<div class="alert-item a-warning">⚠️ ${d.pendentesEnvio} pedido(s) aguardando envio ao fornecedor</div>`;
+  if (d.pendentesRepasse > 0) alertasHtml += `<div class="alert-item a-info">💸 ${d.pendentesRepasse} repasse(s) pendente(s)</div>`;
+  document.getElementById('dash-alertas').innerHTML = alertasHtml;
+
+  const totalVendas = d.porPlataforma.reduce((s, p) => s + p.total, 0);
+  const platColors = { 'Mercado Livre': '#FFBF00', 'Shopee': '#D85A30', 'TikTok Shop': '#2C2C2A' };
+  document.getElementById('dash-plataformas').innerHTML = d.porPlataforma.map(p => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+        <span>${p.plataforma}</span><span>${fmt(p.total)} (${totalVendas > 0 ? Math.round(p.total/totalVendas*100) : 0}%)</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${totalVendas > 0 ? Math.round(p.total/totalVendas*100) : 0}%;background:${platColors[p.plataforma]||'#888'}"></div></div>
+    </div>
+  `).join('') || '<div style="color:var(--txt2);font-size:13px">Nenhuma venda no período</div>';
+
+  const pedidos = await api('/pedidos?status=Novo&limite=5');
+  const pbMap = { 'Mercado Livre': 'b-ml', 'Shopee': 'b-sp', 'TikTok Shop': 'b-tt' };
+  document.getElementById('dash-recentes').innerHTML = (pedidos || []).map(p => `
+    <tr><td>${p.produto_nome}</td><td><span class="badge ${pbMap[p.plataforma]||''}">${p.plataforma}</span></td>
+    <td><span class="badge b-novo">Novo</span></td></tr>
+  `).join('') || '<tr><td colspan="3" class="empty">Nenhum pedido novo</td></tr>';
+}
+
+async function carregarPedidos(statusFiltro = '') {
+  const url = '/pedidos' + (statusFiltro ? '?status=' + statusFiltro : '');
+  const lista = await api(url);
+  const sbMap = { Novo: 'b-novo', Enviado: 'b-enviado', Despachado: 'b-despachado', Entregue: 'b-entregue' };
+  const pbMap = { 'Mercado Livre': 'b-ml', 'Shopee': 'b-sp', 'TikTok Shop': 'b-tt' };
+  document.getElementById('tbody-pedidos').innerHTML = (lista || []).map(p => `
+    <tr>
+      <td style="color:var(--txt2)">#${p.id}</td>
+      <td>${p.produto_nome}</td>
+      <td><span class="badge ${pbMap[p.plataforma]||''}">${p.plataforma}</span></td>
+      <td>${fmt(p.valor_cliente)}</td>
+      <td>${fmt(p.valor_fornecedor)}</td>
+      <td style="color:var(--red)">${fmt(p.taxa_plataforma+p.taxa_frete+p.outras_taxas)}</td>
+      <td style="color:${p.lucro>=0?'var(--green)':'var(--red)'}">${fmt(p.lucro)}</td>
+      <td><span class="badge ${sbMap[p.status]}">${p.status}</span></td>
+      <td><button class="btn sm" onclick="avancarStatus(${p.id})">▶</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="9" class="empty">Nenhum pedido encontrado</td></tr>';
+}
+
+async function avancarStatus(id) {
+  await api('/pedidos/' + id + '/status', { method: 'PATCH', body: JSON.stringify({}) });
+  carregarPedidos();
+}
+
+function filtrarPedidos(status, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  carregarPedidos(status);
+}
+
+async function carregarFornecedores() {
+  const lista = await api('/fornecedores');
+  fornecedores = lista || [];
+  populateSelects();
+  document.getElementById('lista-fornecedores').innerHTML = fornecedores.map(f => {
+    const pend = Math.max(0, (f.total_devido || 0) - (f.total_pago || 0));
+    return `<div class="card">
+      <div class="card-hd"><div class="card-title">${f.nome}</div><span class="badge ${f.forma_pagamento==='Pix'?'b-pago':'b-enviado'}">${f.forma_pagamento}</span></div>
+      <div class="card-body" style="padding:10px 14px">
+        <table style="font-size:12px">
+          <tr><td style="color:var(--txt2);padding:3px 0">Contato:</td><td style="text-align:right">${f.contato||'—'}</td></tr>
+          <tr><td style="color:var(--txt2);padding:3px 0">Prazo:</td><td style="text-align:right">${f.prazo_dias} dias</td></tr>
+          <tr><td style="color:var(--txt2);padding:3px 0">Chave/dados:</td><td style="text-align:right">${f.chave_pagamento||'—'}</td></tr>
+          <tr><td style="color:var(--txt2);padding:3px 0">Total pedidos:</td><td style="text-align:right">${f.total_pedidos||0}</td></tr>
+          <tr><td style="color:var(--txt2);padding:3px 0">Já pago:</td><td style="text-align:right;color:var(--green)">${fmt(f.total_pago)}</td></tr>
+          <tr><td style="color:var(--txt2);padding:3px 0">Pendente:</td><td style="text-align:right;color:${pend>0?'var(--red)':'var(--green)'}">${fmt(pend)}</td></tr>
+        </table>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty" style="grid-column:1/-1">Nenhum fornecedor cadastrado</div>';
+}
+
+async function carregarProdutos() {
+  produtos = await api('/produtos') || [];
+  populateSelects();
+  document.getElementById('tbody-produtos').innerHTML = produtos.map(p => {
+    const margem = p.preco_venda > 0 ? ((p.preco_venda - p.preco_custo) / p.preco_venda * 100).toFixed(1) : '—';
+    return `<tr>
+      <td>${p.nome}</td><td>${p.fornecedor_nome||'—'}</td><td style="color:var(--txt2)">${p.sku||'—'}</td>
+      <td>${fmt(p.preco_custo)}</td><td>${fmt(p.preco_venda)}</td>
+      <td style="color:var(--green)">${margem}%</td><td>${p.total_vendas||0}</td>
+      <td style="color:var(--green)">${fmt(p.lucro_total)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="empty">Nenhum produto cadastrado</td></tr>';
+}
+
+async function carregarFinanceiro() {
+  const [forn, repasses] = await Promise.all([api('/fornecedores'), api('/repasses')]);
+  const totVendas = (forn||[]).reduce((s, f) => s + (f.total_devido||0) + (f.total_pago||0), 0);
+  const totPago = (forn||[]).reduce((s, f) => s + (f.total_pago||0), 0);
+  const totPend = (forn||[]).reduce((s, f) => s + Math.max(0,(f.total_devido||0)-(f.total_pago||0)), 0);
+  document.getElementById('fin-cards').innerHTML = `
+    <div class="card-m"><div class="lbl">Total comprado fornec.</div><div class="val blue">${fmt(totVendas)}</div></div>
+    <div class="card-m"><div class="lbl">Já pago</div><div class="val green">${fmt(totPago)}</div></div>
+    <div class="card-m"><div class="lbl">Pendente repasse</div><div class="val red">${fmt(totPend)}</div></div>
+  `;
+  document.getElementById('tbody-forn-fin').innerHTML = (forn||[]).map(f => {
+    const pend = Math.max(0,(f.total_devido||0)-(f.total_pago||0));
+    return `<tr>
+      <td>${f.nome}</td><td>${f.total_pedidos||0}</td>
+      <td>${fmt((f.total_devido||0)+(f.total_pago||0))}</td>
+      <td style="color:var(--green)">${fmt(f.total_pago)}</td>
+      <td style="color:${pend>0?'var(--red)':'var(--green)'}">${fmt(pend)}</td>
+      <td>${f.forma_pagamento}</td>
+      <td><button class="btn sm success" onclick="openModal('modal-repasse')">Pagar</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbody-repasses').innerHTML = (repasses||[]).map(r =>
+    `<tr><td>${fmtD(r.criado_em)}</td><td>${r.fornecedor_nome}</td><td>${fmt(r.valor)}</td>
+     <td>${r.forma_pagamento}</td><td><span class="badge b-pago">${r.status}</span></td></tr>`
+  ).join('') || '<tr><td colspan="5" class="empty">Nenhum repasse registrado</td></tr>';
+}
+
+async function carregarIntegracoes() {
+  const status = await api('/integracoes') || {};
+  const plats = [
+    { id: 'mercadolivre', nome: 'Mercado Livre', cor: '#FFBF00' },
+    { id: 'shopee', nome: 'Shopee', cor: '#D85A30' },
+    { id: 'tiktok', nome: 'TikTok Shop', cor: '#2C2C2A' }
+  ];
+  document.getElementById('integr-lista').innerHTML = plats.map(p => `
+    <div class="integr-row">
+      <div><span class="dot ${status[p.id]?'on':'off'}"></span><b>${p.nome}</b></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--txt2)">${status[p.id]?'Conectado':'Não conectado'}</span>
+        ${!status[p.id] ? `<a href="/api/auth/${p.id}" class="btn sm primary">Conectar</a>` : '<span style="font-size:12px;color:var(--green)">✓ Ativo</span>'}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function carregarAlertas() {
+  const lista = await api('/dash/alertas') || [];
+  const badge = document.getElementById('badge-alertas');
+  if (lista.length > 0) { badge.style.display = 'flex'; badge.textContent = lista.length; }
+  else badge.style.display = 'none';
+  document.getElementById('lista-alertas').innerHTML = lista.length ? lista.map(a => `
+    <div class="alert-item ${a.tipo==='warning'?'a-warning':'a-info'}">
+      ${a.tipo==='warning'?'⚠️':'ℹ️'} ${a.mensagem}
+      <span style="margin-left:auto;font-size:11px;color:var(--txt2)">${fmtD(a.criado_em)}</span>
+      <button class="btn sm" onclick="lerAlerta(${a.id})">✓</button>
+    </div>
+  `).join('') : '<div class="empty">Nenhum alerta pendente</div>';
+}
+
+async function lerAlerta(id) {
+  await api('/dash/alertas/' + id + '/ler', { method: 'POST' });
+  carregarAlertas();
+}
+
+async function lerTodos() {
+  await api('/dash/alertas/ler-todos', { method: 'POST' });
+  carregarAlertas();
+}
+
+async function sincronizar(btn) {
+  btn.textContent = '⏳ Sincronizando...';
+  btn.disabled = true;
+  const r = await api('/dash/sincronizar', { method: 'POST' });
+  btn.textContent = '🔄 Sincronizar';
+  btn.disabled = false;
+  if (r) {
+    const total = (r.mercadolivre?.novos || 0) + (r.shopee?.novos || 0);
+    alert(`Sincronização completa!\n• Mercado Livre: ${r.mercadolivre?.novos || 0} novo(s)\n• Shopee: ${r.shopee?.novos || 0} novo(s)`);
+    if (total > 0) carregarDash('mes');
+    carregarAlertas();
+  }
+}
+
+function calcLucro() {
+  const v = parseFloat(document.getElementById('p-vlr').value) || 0;
+  const c = parseFloat(document.getElementById('p-custo').value) || 0;
+  const t = parseFloat(document.getElementById('p-taxa').value) || 0;
+  const f = parseFloat(document.getElementById('p-frete').value) || 0;
+  const o = parseFloat(document.getElementById('p-outras').value) || 0;
+  const lucro = v - c - t - f - o;
+  const el = document.getElementById('p-lucro-preview');
+  el.textContent = fmt(lucro);
+  el.style.color = lucro >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+function autoFill() {
+  const sel = document.getElementById('p-prod');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt?.dataset?.custo) document.getElementById('p-custo').value = opt.dataset.custo;
+  calcLucro();
+}
+
+async function salvarPedido() {
+  const sel = document.getElementById('p-prod');
+  const opt = sel.options[sel.selectedIndex];
+  const r = await api('/pedidos', { method: 'POST', body: JSON.stringify({
+    plataforma: document.getElementById('p-plat').value,
+    produto_nome: opt?.text || 'Produto',
+    produto_id: sel.value || null,
+    fornecedor_id: opt?.dataset?.forn || null,
+    valor_cliente: parseFloat(document.getElementById('p-vlr').value) || 0,
+    valor_fornecedor: parseFloat(document.getElementById('p-custo').value) || 0,
+    taxa_plataforma: parseFloat(document.getElementById('p-taxa').value) || 0,
+    taxa_frete: parseFloat(document.getElementById('p-frete').value) || 0,
+    outras_taxas: parseFloat(document.getElementById('p-outras').value) || 0,
+    observacao: document.getElementById('p-obs').value
+  })});
+  if (r?.id) { closeModal('modal-pedido'); carregarPedidos(); carregarDash('mes'); }
+}
+
+async function salvarFornecedor() {
+  const r = await api('/fornecedores', { method: 'POST', body: JSON.stringify({
+    nome: document.getElementById('f-nome').value,
+    contato: document.getElementById('f-contato').value,
+    prazo_dias: parseInt(document.getElementById('f-prazo').value) || 3,
+    forma_pagamento: document.getElementById('f-pgto').value,
+    chave_pagamento: document.getElementById('f-chave').value
+  })});
+  if (r?.id) { closeModal('modal-fornecedor'); carregarFornecedores(); }
+}
+
+async function salvarProduto() {
+  const r = await api('/produtos', { method: 'POST', body: JSON.stringify({
+    nome: document.getElementById('pr-nome').value,
+    sku: document.getElementById('pr-sku').value,
+    fornecedor_id: document.getElementById('pr-forn').value,
+    preco_custo: parseFloat(document.getElementById('pr-custo').value) || 0,
+    preco_venda: parseFloat(document.getElementById('pr-venda').value) || 0
+  })});
+  if (r?.id) { closeModal('modal-produto'); carregarProdutos(); }
+}
+
+async function salvarRepasse() {
+  const r = await api('/repasses', { method: 'POST', body: JSON.stringify({
+    fornecedor_id: document.getElementById('r-forn').value,
+    valor: parseFloat(document.getElementById('r-vlr').value) || 0,
+    forma_pagamento: document.getElementById('r-pgto').value,
+    observacao: document.getElementById('r-obs').value
+  })});
+  if (r?.id) { closeModal('modal-repasse'); carregarFinanceiro(); }
+}
+
+const pageLoaders = {
+  dashboard: () => carregarDash('mes'),
+  pedidos: () => carregarPedidos(),
+  financeiro: () => carregarFinanceiro(),
+  fornecedores: () => carregarFornecedores(),
+  produtos: () => carregarProdutos(),
+  integracoes: () => carregarIntegracoes(),
+  alertas: () => carregarAlertas()
+};
+
+function nav(p) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.getElementById('page-' + p)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.getAttribute('onclick')?.includes("'" + p + "'")) el.classList.add('active');
+  });
+  if (pageLoaders[p]) pageLoaders[p]();
+}
+
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+// Auto check alertas a cada 5 min
+setInterval(carregarAlertas, 5 * 60 * 1000);
+
+// Init
+if (token) showApp(); else showLogin();
+</script>
+</body>
+</html>
