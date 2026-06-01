@@ -1,0 +1,13 @@
+{
+  "name": "geekcard",
+  "version": "2.0.0",
+  "description": "GeekCard - Sistema de Gestão Dropshipping para Cloudflare Workers",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
